@@ -2,14 +2,20 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/clientv3/naming"
 	"github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes"
+	"github.com/gin-gonic/gin/json"
 	"github.com/sirupsen/logrus"
-	grpcNaming "google.golang.org/grpc/naming"
 	"log"
 	"time"
 )
+
+type Service struct {
+	Addr         string `json:"Addr"`
+	Metadate     string `json:"Metadate"`
+}
 
 var stopSignal chan bool
 
@@ -31,11 +37,20 @@ func NewGrpcResolover() (*naming.GRPCResolver, error) {
 	return r, nil
 }
 
-func ResgiterServer(r naming.GRPCResolver, service string, addr string, interval time.Duration, ttl int) error {
+func ResgiterServer(r naming.GRPCResolver, serviceName string, addr string, interval time.Duration, ttl int) error {
+	service := Service{
+		Addr: addr,
+		Metadate: "...",
+	}
+	bts, err := json.Marshal(service)
+	if err != nil{
+		return err
+	}
+	serviceValue := string(bts)
+	serviceKey := fmt.Sprintf("%s/%s", serviceName, serviceValue)
+
 	go func() {
 		client := r.Client
-		serviceValue := string(service + ":" + addr)
-		serviceKey := service + ":instance"
 		ticker := time.NewTicker(interval)
 		for {
 			// minimum lease TTL is ttl-second
@@ -69,20 +84,19 @@ func ResgiterServer(r naming.GRPCResolver, service string, addr string, interval
 			}
 		}
 	}()
-	err := r.Update(context.TODO(), service, grpcNaming.Update{Op: grpcNaming.Add, Addr: addr})
 
-	return err
+	return nil
 }
 
-func UnRegisterServer(r naming.GRPCResolver, service string) error {
-	stopSignal <- true
-	stopSignal = make(chan bool, 1) // just a hack to avoid multi UnRegister deadlock
-	serviceKey := service + ":instance"
-	var err error
-	if _, err := r.Client.Delete(context.Background(), serviceKey); err != nil {
-		log.Printf("grpclb: deregister '%s' failed: %s", serviceKey, err.Error())
-	} else {
-		log.Printf("grpclb: deregister '%s' ok.", serviceKey)
-	}
-	return err
-}
+//func UnRegisterServer(r naming.GRPCResolver, serviceName string) error {
+//	stopSignal <- true
+//	stopSignal = make(chan bool, 1) // just a hack to avoid multi UnRegister deadlock
+//	serviceKey := fmt.Sprintf("%s/%s", serviceName, serviceValue)
+//	var err error
+//	if _, err := r.Client.Delete(context.Background(), serviceKey); err != nil {
+//		log.Printf("grpclb: deregister '%s' failed: %s", serviceKey, err.Error())
+//	} else {
+//		log.Printf("grpclb: deregister '%s' ok.", serviceKey)
+//	}
+//	return err
+//}
