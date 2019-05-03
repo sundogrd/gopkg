@@ -39,9 +39,10 @@ func ResgiterServer(r naming.GRPCResolver, service string, addr string, interval
 		ticker := time.NewTicker(interval)
 		for {
 			// minimum lease TTL is ttl-second
-			resp, _ := client.Grant(context.TODO(), int64(ttl))
+			resp, err := client.Grant(context.TODO(), int64(ttl))
 			// should get first, if not exist, set it
-			_, err := client.Get(context.Background(), serviceKey)
+			getResp, err := client.Get(context.Background(), serviceKey)
+			logrus.Print(getResp)
 			if err != nil {
 				if err == rpctypes.ErrKeyNotFound {
 					if _, err := client.Put(context.TODO(), serviceKey, serviceValue, clientv3.WithLease(resp.ID)); err != nil {
@@ -51,10 +52,14 @@ func ResgiterServer(r naming.GRPCResolver, service string, addr string, interval
 					log.Printf("grpclb: service '%s' connect to etcd3 failed: %s", service, err.Error())
 				}
 			} else {
+				if getResp.Count == 0 {
+					if _, err := client.Put(context.TODO(), serviceKey, serviceValue, clientv3.WithLease(resp.ID)); err != nil {
+						logrus.Printf("grpclb: set service '%s' with ttl to etcd3 failed: %s", service, err.Error())
+					}
+				}
 				// refresh set to true for not notifying the watcher
 				if _, err := client.Put(context.Background(), serviceKey, serviceValue, clientv3.WithLease(resp.ID)); err != nil {
 					logrus.Infof("grpclb: refresh service '%s' with ttl to etcd3 failed: %s", service, err.Error())
-
 				}
 			}
 			select {
