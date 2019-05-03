@@ -2,10 +2,10 @@ package grpc
 
 import (
 	"context"
+	"github.com/coreos/etcd/clientv3"
+	"github.com/coreos/etcd/clientv3/naming"
+	"github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes"
 	"github.com/sirupsen/logrus"
-	"go.etcd.io/etcd/clientv3"
-	"go.etcd.io/etcd/clientv3/naming"
-	"go.etcd.io/etcd/etcdserver/api/v3rpc/rpctypes"
 	grpcNaming "google.golang.org/grpc/naming"
 	"log"
 	"time"
