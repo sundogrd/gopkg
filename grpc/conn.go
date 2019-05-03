@@ -2,9 +2,9 @@ package grpc
 
 import (
 	"context"
-	"github.com/coreos/etcd/clientv3/naming"
 	"github.com/sirupsen/logrus"
 	"go.etcd.io/etcd/clientv3"
+	"go.etcd.io/etcd/clientv3/naming"
 	"go.etcd.io/etcd/etcdserver/api/v3rpc/rpctypes"
 	grpcNaming "google.golang.org/grpc/naming"
 	"log"
@@ -15,7 +15,7 @@ var stopSignal chan bool
 
 // TODO: gRPC服务发现
 // http://ralphbupt.github.io/2017/11/27/etcd%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/
-func NewGrpcResolover() (*naming.GRPCResolver ,error) {
+func NewGrpcResolover() (*naming.GRPCResolver, error) {
 	cli, err := clientv3.New(clientv3.Config{
 		Endpoints:   []string{"127.0.0.1:2379"},
 		DialTimeout: 5 * time.Second,
