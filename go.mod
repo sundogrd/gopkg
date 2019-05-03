@@ -24,7 +24,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/prometheus/common v0.3.0
 	github.com/sirupsen/logrus v1.4.1
-	github.com/ugorji/go v1.1.4 // indirect
+	github.com/ugorji/go v1.1.2-0.20180831062425-e253f1f20942 // indirect
 	github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2 // indirect
 	go.etcd.io/bbolt v1.3.2 // indirect
 	google.golang.org/grpc v1.20.1
