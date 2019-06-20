@@ -3,29 +3,36 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"log"
+	"time"
+
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/clientv3/naming"
 	"github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes"
 	"github.com/gin-gonic/gin/json"
 	"github.com/sirupsen/logrus"
-	"log"
-	"time"
 )
 
 type Service struct {
-	Addr         string `json:"Addr"`
-	Metadate     string `json:"Metadate"`
+	Addr     string `json:"Addr"`
+	Metadate string `json:"Metadate"`
 }
 
 var stopSignal chan bool
 
 // TODO: gRPC服务发现
 // http://ralphbupt.github.io/2017/11/27/etcd%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/
-func NewGrpcResolover() (*naming.GRPCResolver, error) {
-	cli, err := clientv3.New(clientv3.Config{
+func NewGrpcResolover(endpoints ...string) (*naming.GRPCResolver, error) {
+	var config = clientv3.Config{
 		Endpoints:   []string{"127.0.0.1:2379"},
 		DialTimeout: 5 * time.Second,
-	})
+	}
+
+	if len(endpoints) != 0 {
+		config.Endpoints = endpoints
+	}
+
+	cli, err := clientv3.New(config)
 	if err != nil {
 		return nil, err
 	}
@@ -39,11 +46,11 @@ func NewGrpcResolover() (*naming.GRPCResolver, error) {
 
 func ResgiterServer(r naming.GRPCResolver, serviceName string, addr string, interval time.Duration, ttl int) error {
 	service := Service{
-		Addr: addr,
+		Addr:     addr,
 		Metadate: "...",
 	}
 	bts, err := json.Marshal(service)
-	if err != nil{
+	if err != nil {
 		return err
 	}
 	serviceValue := string(bts)
