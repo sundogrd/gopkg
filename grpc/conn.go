@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"time"
@@ -9,7 +10,6 @@ import (
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/clientv3/naming"
 	"github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes"
-	"github.com/gin-gonic/gin/json"
 	"github.com/sirupsen/logrus"
 )
 
