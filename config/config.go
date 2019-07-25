@@ -1,43 +1,19 @@
 package config
 
 import (
-	"github.com/prometheus/common/log"
-	"path/filepath"
-
-	"github.com/Jeffail/gabs"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
-type Config struct {
-	JsonContainer gabs.Container
-}
-
-func (conf Config) Get(path string) interface{} {
-	return conf.JsonContainer.Path(path).Data()
-}
-
-// NewConfig ...
-func NewConfig() Config {
-	return Config{}
-}
-
-func ReadConfigFromFile(confDir string, configFile *string) (*Config, error) {
-	Conf := &Config{}
-
-	if configFile != nil {
-		container, err := gabs.ParseJSONFile(filepath.Join(confDir, *configFile))
-		if err != nil {
-			return nil, err
-		}
-		Conf.JsonContainer = *container
-	} else {
-		log.Infof("[config] load from default file service.config.json")
-		container, err := gabs.ParseJSONFile(filepath.Join(confDir, "service.config.json"))
-		if err != nil {
-			return nil, err
-		}
-		Conf.JsonContainer = *container
+// Init ...
+func Load(configPath string, configName string) (*viper.Viper, error) {
+	config := viper.New()
+	config.SetConfigName(configName)
+	config.AddConfigPath(configPath)
+	err := config.ReadInConfig()
+	if err != nil {
+		logrus.Errorf("[config.Load] load config failed, err: %s", err.Error())
+		return nil, err
 	}
-
-	log.Infof("[config] Init config in %s, Conf: %+v\n", confDir, Conf)
-	return Conf, nil
+	return config, nil
 }
