@@ -3,13 +3,14 @@ package db
 import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql" // ...
+	"strconv"
 )
 
 type ConnectOptions struct {
 	User string
 	Password string
 	Host string
-	Port string
+	Port int16
 	DBName string
 	ConnectTimeout string
 }
@@ -25,7 +26,7 @@ func OpenDB(dataSourceName string) (*gorm.DB, error) {
 
 // Connect 用配置文件连接数据库
 func Connect(connectOptions ConnectOptions) (*gorm.DB, error) {
-	db, err := OpenDB(connectOptions.User + ":" + connectOptions.Password + "@tcp(" + connectOptions.Host + ":" + connectOptions.Port + ")" + "/" + connectOptions.DBName + "?charset=utf8&parseTime=True&loc=Local&timeout=" + connectOptions.ConnectTimeout)
+	db, err := OpenDB(connectOptions.User + ":" + connectOptions.Password + "@tcp(" + connectOptions.Host + ":" + strconv.FormatInt(int64(connectOptions.Port), 10) + ")" + "/" + connectOptions.DBName + "?charset=utf8&parseTime=True&loc=Local&timeout=" + connectOptions.ConnectTimeout)
 	if err != nil {
 		return nil, err
 	}
